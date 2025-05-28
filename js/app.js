@@ -312,46 +312,109 @@ function showQuestion() {
         console.error('題目缺少 options 欄位或選項為空', q);
         return;
     }
+
     let optionList = q.options.map((opt, idx) => ({ opt, idx }));
     console.log('optionList:', optionList, 'q:', q);
-    if (answerOrder === 'shuffle') {
+
+    // 一般題型才需要隨機化選項，multioption 不需要
+    if (q.type !== 'multioption' && answerOrder === 'shuffle') {
         optionList = shuffle(optionList);
     }
+
     // 記錄本題的 optionList 供 submitAnswer 用
     optionListPerQuestion[current] = optionList;
-    // 單選或複選
-    optionList.forEach((item, i) => {
-        const id = `opt${i}`;
-        const wrapper = document.createElement('div');
-        wrapper.style.display = 'flex';
-        wrapper.style.alignItems = 'center';
-        wrapper.style.marginBottom = '8px';
-        const input = document.createElement('input');
-        input.type = q.answer.length > 1 ? 'checkbox' : 'radio';
-        input.name = 'option';
-        input.value = item.idx; // value 設為原始 index
-        input.id = id;
-        input.style.marginRight = '8px';
-        // 自動勾選已作答答案
-        if (answers[current] && Array.isArray(answers[current].userAns)) {
-            // userAns 為 1-based，input.value 為 0-based idx
-            if (answers[current].userAns.includes(item.idx + 1)) {
-                input.checked = true;
+
+    // 根據題目類型顯示不同的答題界面
+    if (q.type === 'multioption') {
+        // 多選下拉式選單處理
+        for (let i = 0; i < q.options.length; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.marginBottom = '15px';
+
+            // 選項序號標籤
+            const numberSpan = document.createElement('span');
+            numberSpan.textContent = `第 ${i + 1} 空格：`;
+            numberSpan.style.marginRight = '10px';
+            numberSpan.style.fontWeight = 'bold';
+
+            // 建立下拉式選單
+            const select = document.createElement('select');
+            select.id = `select${i}`;
+            select.className = 'form-select';
+            select.style.width = 'auto';
+            select.style.minWidth = '150px';
+
+            // 分割選項文字成為下拉選單項目
+            const optionTexts = q.options[i].split(/\s+/);
+            optionTexts.forEach((optText, optIndex) => {
+                const option = document.createElement('option');
+                option.value = optIndex + 1;  // 1-based 索引
+                option.textContent = optText;
+                select.appendChild(option);
+            });
+
+            // 如果有之前的答案，設定預設值
+            if (answers[current] && Array.isArray(answers[current].userAns) && answers[current].userAns[i]) {
+                select.value = answers[current].userAns[i];
             }
+
+            wrapper.appendChild(numberSpan);
+            wrapper.appendChild(select);
+            optionsForm.appendChild(wrapper);
         }
-        // 新增：選項前加上數字
-        const numberSpan = document.createElement('span');
-        numberSpan.textContent = (i + 1) + '. ';
-        numberSpan.style.marginRight = '4px'; const label = document.createElement('label');
-        label.htmlFor = id;
-        // 將選項中的 \n 換行符轉換為 <br> 標籤
-        label.innerHTML = item.opt.replace(/\n/g, '<br>');
-        label.style.margin = 0;
-        wrapper.appendChild(input);
-        wrapper.appendChild(numberSpan);
-        wrapper.appendChild(label);
-        optionsForm.appendChild(wrapper);
-    });
+
+        // 建立提交按鈕
+        const submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        submitButton.className = 'btn btn-primary';
+        submitButton.textContent = '確認答案';
+        optionsForm.appendChild(submitButton);
+    } else {
+        // 單選或複選題處理
+        optionList.forEach((item, i) => {
+            const id = `opt${i}`;
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.marginBottom = '8px';
+            const input = document.createElement('input');
+            input.type = q.answer.length > 1 ? 'checkbox' : 'radio';
+            input.name = 'option';
+            input.value = item.idx; // value 設為原始 index
+            input.id = id;
+            input.style.marginRight = '8px';
+            // 自動勾選已作答答案
+            if (answers[current] && Array.isArray(answers[current].userAns)) {
+                // userAns 為 1-based，input.value 為 0-based idx
+                if (answers[current].userAns.includes(item.idx + 1)) {
+                    input.checked = true;
+                }
+            }
+            // 新增：選項前加上數字
+            const numberSpan = document.createElement('span');
+            numberSpan.textContent = (i + 1) + '. ';
+            numberSpan.style.marginRight = '4px';
+            const label = document.createElement('label');
+            label.htmlFor = id;
+            // 將選項中的 \n 換行符轉換為 <br> 標籤
+            label.innerHTML = item.opt.replace(/\n/g, '<br>');
+            label.style.margin = 0;
+            wrapper.appendChild(input);
+            wrapper.appendChild(numberSpan);
+            wrapper.appendChild(label);
+            optionsForm.appendChild(wrapper);
+        });
+
+        // 建立提交按鈕
+        const submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        submitButton.className = 'btn btn-primary';
+        submitButton.textContent = '確認答案';
+        optionsForm.appendChild(submitButton);
+    }
+
     console.log('optionsForm.innerHTML:', optionsForm.innerHTML);
     // 移除舊的 <hr> 和 btn-row，避免重複
     Array.from(optionsForm.querySelectorAll('hr')).forEach(hr => hr.remove());
@@ -565,32 +628,67 @@ function submitAnswer(e) {
     if (e) e.preventDefault();
     const q = quizQuestions[current];
     if (!q) return;
+
     // 取得本題的 optionList（顯示順序）
     const optionList = optionListPerQuestion[current] || q.options.map((opt, idx) => ({ opt, idx }));
-    // 取得使用者選擇（原始 idx 陣列）
+
+    // 根據題目類型處理不同的答題界面
     let selected = [];
-    const inputs = optionsForm.querySelectorAll('input[name="option"]');
-    inputs.forEach(input => {
-        if (input.checked) selected.push(Number(input.value)); // value = 原始 idx
-    });
-    // 單選強制只取一個
-    if (q.answer.length === 1 && selected.length > 1) selected = [selected[0]];
-    if (selected.length === 0) {
+    let userAns = [];
+
+    if (q.type === 'multioption') {
+        // 處理下拉式選單答案
+        for (let i = 0; i < q.options.length; i++) {
+            const select = document.getElementById(`select${i}`);
+            if (select) {
+                const value = parseInt(select.value);
+                userAns.push(value);  // 1-based 索引存入 userAns
+            }
+        }
+        selected = userAns.map(a => a - 1);  // 轉為 0-based 以便後續處理
+    } else {
+        // 處理單選或複選題答案
+        const inputs = optionsForm.querySelectorAll('input[name="option"]');
+        inputs.forEach(input => {
+            if (input.checked) selected.push(Number(input.value)); // value = 原始 idx
+        });
+
+        // 單選強制只取一個
+        if (q.answer.length === 1 && selected.length > 1) selected = [selected[0]];
+        userAns = selected.map(i => i + 1);  // 轉為 1-based 存入 userAns
+    }
+
+    // 未作答檢查
+    if (selected.length === 0 || (q.type === 'multioption' && selected.some(s => s === undefined))) {
         feedback.innerHTML = '<span style="color:#e74c3c;font-weight:bold;">請先選擇答案！</span>';
         feedback.classList.add('show');
         return;
     }
+
     // 正確答案（原始 idx 陣列，1-based 轉 0-based）
-    const correctIdxArr = q.answer.map(a => a - 1).sort((a, b) => a - b);
-    const userIdxArr = selected.slice().sort((a, b) => a - b);    // 判斷正確
-    let isCorrect = userIdxArr.length === correctIdxArr.length && userIdxArr.every((v, i) => v === correctIdxArr[i]);
+    const correctIdxArr = q.answer.map(a => a - 1);
+    const userIdxArr = selected.slice();
+
+    // 判斷正確
+    let isCorrect;
+    if (q.type === 'multioption') {
+        // multioption 需要每個位置都對應正確
+        isCorrect = userIdxArr.length === correctIdxArr.length &&
+            userIdxArr.every((v, i) => v === correctIdxArr[i]);
+    } else {
+        // 一般題目判斷選項是否正確
+        const sortedUserArr = userIdxArr.slice().sort((a, b) => a - b);
+        const sortedCorrectArr = correctIdxArr.slice().sort((a, b) => a - b);
+        isCorrect = sortedUserArr.length === sortedCorrectArr.length &&
+            sortedUserArr.every((v, i) => v === sortedCorrectArr[i]);
+    }
 
     // 檢查之前是否已經有答案，如果已經答對過，不要重複計分
     const previouslyAnswered = answers[current] !== undefined;
     const previouslyCorrect = previouslyAnswered && answers[current].isCorrect;
 
     // 更新答案狀態
-    answers[current] = { userAns: userIdxArr.map(i => i + 1), isCorrect };
+    answers[current] = { userAns: userAns, isCorrect };
 
     // 只有在這題之前沒有答對過，現在答對了，才增加分數
     if (isCorrect && !previouslyCorrect) {
@@ -605,8 +703,9 @@ function submitAnswer(e) {
     wrongQuestions = wrongQuestions.filter(wq => wq.id !== q.id);
     // 如果答錯了，添加到錯題列表
     if (!isCorrect) {
-        wrongQuestions.push({ ...q, userAns: userIdxArr.map(i => i + 1) });
+        wrongQuestions.push({ ...q, userAns: userAns });
     }
+
     // 顯示正確/錯誤（客製化提示）
     let feedbackHtml = '';
     if (isCorrect) {
@@ -618,52 +717,128 @@ function submitAnswer(e) {
         playSound('error');
         feedbackHtml = '<span style="color:#e74c3c;font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> 答錯了</span>';
     }
-    // 顯示正確答案（以 optionList 找出顯示順序的內容）
-    let ansText = correctIdxArr.map(idx => {
-        const optObj = optionList.find(o => o.idx === idx);
-        return optObj ? optObj.opt : (q.options[idx] || '');
-    }).join('、');
-    // 只有答錯時才顯示正確答案及你的答案
-    if (!isCorrect) {
-        let userText = userIdxArr.map(idx => {
+
+    // 根據題目類型顯示不同的答案回饋
+    if (q.type === 'multioption') {
+        // 顯示下拉式選單題目的答案情況
+        if (!isCorrect) {
+            const answerTable = document.createElement('table');
+            answerTable.className = 'table table-sm mt-2';
+            answerTable.style.width = 'auto';
+
+            // 表頭
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['空格', '你的答案', '正確答案'].forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            answerTable.appendChild(thead);
+
+            // 表格內容
+            const tbody = document.createElement('tbody');
+            for (let i = 0; i < q.options.length; i++) {
+                const tr = document.createElement('tr');
+
+                // 空格編號
+                const tdNum = document.createElement('td');
+                tdNum.textContent = i + 1;
+
+                // 使用者答案
+                const tdUser = document.createElement('td');
+                const userOptionTexts = q.options[i].split(/\s+/);
+                tdUser.textContent = userOptionTexts[userAns[i] - 1] || '未選擇';
+                if (userAns[i] !== q.answer[i]) {
+                    tdUser.style.color = '#e74c3c';
+                }
+
+                // 正確答案
+                const tdCorrect = document.createElement('td');
+                const correctOptionTexts = q.options[i].split(/\s+/);
+                tdCorrect.textContent = correctOptionTexts[q.answer[i] - 1] || '';
+                tdCorrect.style.color = '#2980b9';
+
+                tr.appendChild(tdNum);
+                tr.appendChild(tdUser);
+                tr.appendChild(tdCorrect);
+                tbody.appendChild(tr);
+            }
+            answerTable.appendChild(tbody);
+
+            feedbackHtml += '<div style="margin-top:10px;"><b>答案比對：</b></div>';
+            feedbackHtml += answerTable.outerHTML;
+        }
+    } else {
+        // 一般題型答案顯示
+        // 顯示正確答案（以 optionList 找出顯示順序的內容）
+        let ansText = correctIdxArr.map(idx => {
             const optObj = optionList.find(o => o.idx === idx);
             return optObj ? optObj.opt : (q.options[idx] || '');
         }).join('、');
-        feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><span style='color:#2980b9;'>${ansText}</span></div>`;
-        feedbackHtml += `<div><b>你的答案：</b>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
-    }
-    // 顯示詳細解析
-    if (q.explanation) {
-        let explanationDiv = document.getElementById('explanation');
-        if (explanationDiv) {
-            explanationDiv.innerHTML = `<b>解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}`;
-            explanationDiv.style.display = '';
+        // 只有答錯時才顯示正確答案及你的答案
+        if (!isCorrect) {
+            let userText = userIdxArr.map(idx => {
+                const optObj = optionList.find(o => o.idx === idx);
+                return optObj ? optObj.opt : (q.options[idx] || '');
+            }).join('、');
+            feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><span style='color:#2980b9;'>${ansText}</span></div>`;
+            feedbackHtml += `<div><b>你的答案：</b>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
         }
     }
+
+    // 顯示詳細解析
+    if (q.explanation) {
+        feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>`;
+    }
+
     feedback.innerHTML = feedbackHtml;
     feedback.classList.add('show');
+
     // 禁用所有選項
-    inputs.forEach(input => input.disabled = true);
-    // 切換按鈕顯示狀態
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) submitBtn.style.display = 'none'; const nextBtn = document.getElementById('next-btn');
-    if (nextBtn) {
-        nextBtn.style.display = '';
-        nextBtn.innerHTML = current < total - 1 ?
-            '<i class="fa-solid fa-arrow-right"></i> 繼續下一題' :
-            '<i class="fa-solid fa-rotate-left"></i> 回到第一題'; nextBtn.onclick = function () {
-                nextBtn.style.display = 'none';
-                if (current >= total - 1) {
-                    // 回到第一題繼續答題，而不是結束測驗
-                    current = 0;
-                    // 清空 wrongQuestions 陣列，避免重複計算錯題
-                    wrongQuestions = [];
-                    showQuestion();
-                } else {
-                    current++;
-                    showQuestion();
-                }
-            };
+    if (q.type === 'multioption') {
+        // 禁用下拉式選單
+        for (let i = 0; i < q.options.length; i++) {
+            const select = document.getElementById(`select${i}`);
+            if (select) select.disabled = true;
+        }
+    } else {
+        // 禁用單選/複選按鈕
+        const inputs = optionsForm.querySelectorAll('input[name="option"]');
+        inputs.forEach(input => input.disabled = true);
+    }
+
+    // 禁用提交按鈕並顯示下一題按鈕
+    const submitButtons = optionsForm.querySelectorAll('button[type="submit"]');
+    submitButtons.forEach(button => button.style.display = 'none');
+
+    // 建立下一題按鈕
+    const nextButton = document.createElement('button');
+    nextButton.id = 'next-btn';
+    nextButton.className = 'btn btn-warning';
+    nextButton.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 下一題';
+    nextButton.addEventListener('click', nextQuestion);
+    optionsForm.appendChild(nextButton);
+}
+
+// nextQuestion: 處理進入下一題
+function nextQuestion() {
+    // 隱藏按鈕，避免重複點擊
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) nextBtn.style.display = 'none';
+
+    // 清空解析與成果顯示區
+    feedback.innerHTML = '';
+
+    // 進入下一題
+    current++;
+    // 如果已到最後一題，顯示結果
+    if (current >= total) {
+        showResult();
+    } else {
+        // 否則顯示下一題
+        showQuestion();
     }
 }
 
