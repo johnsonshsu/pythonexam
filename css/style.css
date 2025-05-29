@@ -238,3 +238,8 @@ input[type="number"] {
     background-color: #e9ecef;
     opacity: 1;
 }
+
+pre code {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: .875em !important;
+}

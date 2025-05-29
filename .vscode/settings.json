@@ -1,0 +1,19 @@
+{
+    "python.analysis.typeCheckingMode": "basic", // 啟用基本類型檢查
+    "python.analysis.autoImportCompletions": true, // 自動完成匯入    // 互動視窗相關設定
+    "python.terminal.executeInFileDir": true,
+    "python.terminal.activateEnvironment": true,
+    "python.defaultInterpreterPath": "C:\\anaconda3\\python.exe", // 使用您的 Anaconda Python 路徑
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "jupyter.interactiveWindow.textEditor.executeSelection": true,
+    // 建議的 linter 和 formatter (可選，需要安裝對應工具)
+    // "python.linting.pylintEnabled": true,
+    // "python.linting.flake8Enabled": true,
+    // "python.formatting.provider": "black", // 或 "autopep8", "ruff"
+    // "[python]": {
+    //   "editor.formatOnSave": true,
+    //   "editor.codeActionsOnSave": {
+    //     "source.organizeImports": "explicit" // 使用 ruff 時可以設為 true
+    //   }
+    // }
+}

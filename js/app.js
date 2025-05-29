@@ -214,8 +214,10 @@ function startQuiz() {
     const weightedList = document.getElementById('weighted-list');
     if (weightedList) weightedList.style.display = 'none';
     // 讀取答案順序設定
-    const orderRadio = document.querySelector('input[name="answer-order"]:checked');
-    answerOrder = orderRadio ? orderRadio.value : 'original';
+    //const orderRadio = document.querySelector('input[name="answer-order"]:checked');
+    //answerOrder = orderRadio ? orderRadio.value : 'original';
+    // 預設答案順序為原始順序
+    answerOrder = 'original';
     let countValue = document.getElementById('question-count').value;
     let count;
     if (countValue === 'all') {
@@ -282,27 +284,67 @@ function showQuestion() {
         console.error('quizQuestions 為空或 current 超出範圍', { quizQuestions, current });
         return;
     }
+
     // 強制隱藏高權重題目列表
     const weightedList = document.getElementById('weighted-list');
     if (weightedList) weightedList.style.display = 'none';
+
+    // 清空之前的內容
     feedback.textContent = '';
     optionsForm.innerHTML = '';
     optionsForm.style.display = '';
     optionsForm.classList.remove('hidden'); // 新增：確保答案區塊顯示
+
+    // 取得當前題目
     const q = quizQuestions[current];
-    // debug: 檢查題目與選項
     console.log('showQuestion', q);
+
     // 顯示進度
     const progressDiv = document.getElementById('progress-info');
-    progressDiv.textContent = `第 ${current + 1} / ${total} 題　進度：${Math.round(((current + 1) / total) * 100)}%`;    // 題目文字（不再顯示進度）
-    // 將 \n 換行符轉換為 <br> 標籤
-    questionText.innerHTML = q.question.replace(/\n/g, '<br>');
+    progressDiv.textContent = `第 ${current + 1} / ${total} 題　進度：${Math.round(((current + 1) / total) * 100)}%`;
+
+    // 處理題目內容，包含代碼區塊的高亮處理
+    // 首先將字面值的 "\n" 替換為真正的換行符，然後再處理代碼區塊
+    let processedQuestion = q.question.replace(/\\n/g, '\n');
+
+    // 檢查是否含有代碼區塊標記 <pre><code class="language-xxx">
+    if (processedQuestion.includes('<pre><code class="language-')) {
+        // 在代碼區塊之外的文本，將 \n 換行符轉換為 <br> 標籤
+        // 但保留代碼區塊中的換行，以便正確高亮顯示
+
+        // 先分割 pre 標籤和非 pre 標籤的內容
+        const parts = processedQuestion.split(/(<pre><code.*?>[\s\S]*?<\/code><\/pre>)/g);
+
+        // 處理每個部分
+        const processedParts = parts.map(part => {
+            if (part.startsWith('<pre><code')) {
+                // 保留代碼區塊部分不變
+                return part;
+            } else {
+                // 非代碼區塊部分，將換行符轉為 <br>
+                return part.replace(/\n/g, '<br>');
+            }
+        });
+
+        // 將所有部分合併
+        questionText.innerHTML = processedParts.join('');
+    } else {
+        // 將 \n 換行符轉換為 <br> 標籤
+        questionText.innerHTML = processedQuestion.replace(/\n/g, '<br>');
+    }
+
     // 圖片
     if (q.image) {
         questionImage.innerHTML = `<img src="${q.image}" alt="題目圖片">`;
     } else {
         questionImage.innerHTML = '';
     }
+
+    // 觸發 Prism.js 語法高亮
+    if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+    }
+
     // 處理選項順序
     if (!Array.isArray(q.options) || q.options.length === 0) {
         questionText.innerHTML = '⚠️ 此題目缺少選項資料，請檢查題庫格式！';
@@ -335,7 +377,7 @@ function showQuestion() {
 
             // 選項序號標籤
             const numberSpan = document.createElement('span');
-            numberSpan.textContent = `第 ${i + 1} 空格：`;
+            numberSpan.textContent = `第 ${i + 1} 項答案：`;
             numberSpan.style.marginRight = '10px';
             numberSpan.style.fontWeight = 'bold';
 
@@ -346,8 +388,8 @@ function showQuestion() {
             select.style.width = 'auto';
             select.style.minWidth = '150px';
 
-            // 分割選項文字成為下拉選單項目
-            const optionTexts = q.options[i].split(/\s+/);
+            // 分割選項文字成為下拉選單項目（使用 | 符號分割）
+            const optionTexts = q.options[i].split('|');
             optionTexts.forEach((optText, optIndex) => {
                 const option = document.createElement('option');
                 option.value = optIndex + 1;  // 1-based 索引
@@ -364,13 +406,6 @@ function showQuestion() {
             wrapper.appendChild(select);
             optionsForm.appendChild(wrapper);
         }
-
-        // 建立提交按鈕
-        const submitButton = document.createElement('button');
-        submitButton.type = 'submit';
-        submitButton.className = 'btn btn-primary';
-        submitButton.textContent = '確認答案';
-        optionsForm.appendChild(submitButton);
     } else {
         // 單選或複選題處理
         optionList.forEach((item, i) => {
@@ -406,59 +441,65 @@ function showQuestion() {
             wrapper.appendChild(label);
             optionsForm.appendChild(wrapper);
         });
-
-        // 建立提交按鈕
-        const submitButton = document.createElement('button');
-        submitButton.type = 'submit';
-        submitButton.className = 'btn btn-primary';
-        submitButton.textContent = '確認答案';
-        optionsForm.appendChild(submitButton);
     }
 
     console.log('optionsForm.innerHTML:', optionsForm.innerHTML);
-    // 移除舊的 <hr> 和 btn-row，避免重複
+
+    // 移除舊的 <hr>，避免重複
     Array.from(optionsForm.querySelectorAll('hr')).forEach(hr => hr.remove());
-    const oldBtnRow = document.getElementById('btn-row');
-    if (oldBtnRow) oldBtnRow.remove();
-    // 產生直線
+
+    // 清理任何之前的按鈕列
+    const oldBtnRows = document.querySelectorAll('#btn-row');
+    oldBtnRows.forEach(row => row.parentNode && row.parentNode.removeChild(row));
+
+    // 添加分隔線
     const hr = document.createElement('hr');
     optionsForm.appendChild(hr);
-    // 產生按鈕列（提交、繼續、立即交卷、重新開始）
-    let btnRow = document.createElement('div');
+
+    // 創建新的按鈕列
+    const btnRow = document.createElement('div');
     btnRow.id = 'btn-row';
+    btnRow.className = 'mt-3';
     btnRow.style.display = 'flex';
     btnRow.style.justifyContent = 'space-between';
     btnRow.style.alignItems = 'center';
-    btnRow.style.marginTop = '8px';
-    optionsForm.appendChild(btnRow); // 讓按鈕列在 <form> 內部
-    // 左側：提交/繼續
-    let leftBtnBox = document.createElement('div');
+
+    // 左側：提交按鈕區域
+    const leftBtnBox = document.createElement('div');
     leftBtnBox.style.display = 'flex';
     leftBtnBox.style.gap = '12px';
+
     // 提交按鈕
     const submitBtn = document.createElement('button');
     submitBtn.id = 'submit-btn';
     submitBtn.type = 'submit';
-    submitBtn.className = 'btn btn-success';
+    submitBtn.className = 'btn btn-primary';
     submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 提交答案';
     leftBtnBox.appendChild(submitBtn);
-    // 繼續下一題按鈕（預設隱藏）
+
+    // 下一題按鈕（預設隱藏）
     const nextBtn = document.createElement('button');
     nextBtn.id = 'next-btn';
     nextBtn.type = 'button';
-    nextBtn.className = 'btn btn-primary';
+    nextBtn.className = 'btn btn-warning';
+    nextBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 下一題';
     nextBtn.style.display = 'none';
+    nextBtn.addEventListener('click', nextQuestion);
     leftBtnBox.appendChild(nextBtn);
     btnRow.appendChild(leftBtnBox);
+
     // 右側：立即交卷 + 重新開始
-    let rightBtnBox = document.createElement('div');
+    const rightBtnBox = document.createElement('div');
     rightBtnBox.style.display = 'flex';
-    rightBtnBox.style.gap = '12px';    // 立即交卷按鈕
-    let submitAllBtn = document.createElement('button');
+    rightBtnBox.style.gap = '12px';
+
+    // 立即交卷按鈕
+    const submitAllBtn = document.createElement('button');
     submitAllBtn.id = 'submit-all-btn';
     submitAllBtn.type = 'button';
     submitAllBtn.className = 'btn btn-warning';
-    submitAllBtn.innerHTML = '<i class="fa-solid fa-flag"></i> 立即交卷'; submitAllBtn.onclick = function () {
+    submitAllBtn.innerHTML = '<i class="fa-solid fa-flag"></i> 立即交卷';
+    submitAllBtn.onclick = function () {
         // 先清空錯題陣列，重新根據當前答案狀態計算
         wrongQuestions = [];
 
@@ -478,8 +519,9 @@ function showQuestion() {
         showResult();
     };
     rightBtnBox.appendChild(submitAllBtn);
+
     // 重新開始按鈕
-    let quitBtn = document.createElement('button');
+    const quitBtn = document.createElement('button');
     quitBtn.id = 'quit-btn';
     quitBtn.type = 'button';
     quitBtn.className = 'btn btn-danger';
@@ -493,6 +535,10 @@ function showQuestion() {
     });
     rightBtnBox.appendChild(quitBtn);
     btnRow.appendChild(rightBtnBox);
+
+    // 將按鈕列添加到表單後面
+    optionsForm.appendChild(btnRow);
+
     // 顯示詳細說明欄位（僅於有設定時）
     let explanationDiv = document.getElementById('explanation');
     if (!explanationDiv) {
@@ -508,11 +554,10 @@ function showQuestion() {
     }
     // 一律隱藏說明，避免未作答就顯示
     explanationDiv.style.display = 'none';
+
     // 隱藏繼續按鈕（每次換題都隱藏）
-    const nextBtnHide = document.getElementById('next-btn');
-    if (nextBtnHide) nextBtnHide.style.display = 'none';
-    // 更新跳題下拉選單選中狀態，並確保顯示與內容正確
-    // setupJumpSelect();
+    if (nextBtn) nextBtn.style.display = 'none';
+
     // 題目動畫淡入
     questionText.classList.remove('show');
     questionImage.classList.remove('show');
@@ -522,6 +567,7 @@ function showQuestion() {
         questionImage.classList.add('show');
         optionsForm.classList.add('show');
     }, 10);
+
     // 換題時移除回饋動畫
     feedback.classList.remove('show');
     renderQuestionNumberList();
@@ -747,16 +793,14 @@ function submitAnswer(e) {
                 tdNum.textContent = i + 1;
 
                 // 使用者答案
-                const tdUser = document.createElement('td');
-                const userOptionTexts = q.options[i].split(/\s+/);
+                const tdUser = document.createElement('td'); const userOptionTexts = q.options[i].split('|');
                 tdUser.textContent = userOptionTexts[userAns[i] - 1] || '未選擇';
                 if (userAns[i] !== q.answer[i]) {
                     tdUser.style.color = '#e74c3c';
                 }
 
                 // 正確答案
-                const tdCorrect = document.createElement('td');
-                const correctOptionTexts = q.options[i].split(/\s+/);
+                const tdCorrect = document.createElement('td'); const correctOptionTexts = q.options[i].split('|');
                 tdCorrect.textContent = correctOptionTexts[q.answer[i] - 1] || '';
                 tdCorrect.style.color = '#2980b9';
 
@@ -786,15 +830,41 @@ function submitAnswer(e) {
             feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><span style='color:#2980b9;'>${ansText}</span></div>`;
             feedbackHtml += `<div><b>你的答案：</b>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
         }
-    }
-
-    // 顯示詳細解析
+    }    // 顯示詳細解析
     if (q.explanation) {
-        feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>`;
+        // 首先處理字面值的 "\n" 替換為真正的換行符
+        let processedExplanation = q.explanation.replace(/\\n/g, '\n');
+
+        // 檢查解析中是否含有代碼區塊
+        if (processedExplanation.includes('<pre><code class="language-')) {
+            // 處理含有代碼區塊的解析
+            const parts = processedExplanation.split(/(<pre><code.*?>[\s\S]*?<\/code><\/pre>)/g);
+
+            // 處理每個部分
+            const processedParts = parts.map(part => {
+                if (part.startsWith('<pre><code')) {
+                    // 代碼區塊部分保持不變
+                    return part;
+                } else {
+                    // 非代碼區塊部分，將換行符轉為 <br>
+                    return part.replace(/\n/g, '<br>');
+                }
+            });
+
+            feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${processedParts.join('')}</div>`;
+        } else {
+            // 沒有代碼區塊，直接將換行符轉為 <br>
+            feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${processedExplanation.replace(/\n/g, '<br>')}</div>`;
+        }
     }
 
     feedback.innerHTML = feedbackHtml;
     feedback.classList.add('show');
+
+    // 觸發 Prism.js 語法高亮
+    if (typeof Prism !== 'undefined') {
+        setTimeout(() => Prism.highlightAll(), 0);
+    }
 
     // 禁用所有選項
     if (q.type === 'multioption') {
@@ -896,16 +966,62 @@ function showResult() {
         wrongQuestions.forEach((q, idx) => {
             // 顯示題目、你的答案、正確答案、解析
             let userAns = (q.userAns || []).map(a => q.options[a - 1]).join('、');
-            let correctAns = (q.answer || []).map(a => q.options[a - 1]).join('、');
-            wrongHtml += `<div style='border:1px solid #ffe0e0;background:#fff8f8;border-radius:8px;padding:14px 16px;margin-bottom:18px;'>`;
-            wrongHtml += `<div style='color:#b71c1c;font-weight:bold;'>${idx + 1}. ${q.question}</div>`;
+            let correctAns = (q.answer || []).map(a => q.options[a - 1]).join('、'); wrongHtml += `<div style='border:1px solid #ffe0e0;background:#fff8f8;border-radius:8px;padding:14px 16px;margin-bottom:18px;'>`;            // 處理題目內容，先處理字面值 \n
+            let processedQuestion = q.question.replace(/\\n/g, '\n');
+
+            // 檢查是否含有代碼區塊
+            let questionContent;
+            if (processedQuestion.includes('<pre><code class="language-')) {
+                // 處理含有代碼區塊的題目
+                const parts = processedQuestion.split(/(<pre><code.*?>[\s\S]*?<\/code><\/pre>)/g);
+
+                // 處理每個部分
+                const processedParts = parts.map(part => {
+                    if (part.startsWith('<pre><code')) {
+                        // 代碼區塊部分保持不變
+                        return part;
+                    } else {
+                        // 非代碼區塊部分，將換行符轉為 <br>
+                        return part.replace(/\n/g, '<br>');
+                    }
+                });
+
+                questionContent = processedParts.join('');
+            } else {
+                // 沒有代碼區塊，直接將換行符轉為 <br>
+                questionContent = processedQuestion.replace(/\n/g, '<br>');
+            }
+
+            wrongHtml += `<div style='color:#b71c1c;font-weight:bold;'>${idx + 1}. ${questionContent}</div>`;
             if (q.image) {
                 wrongHtml += `<div style='margin:8px 0;'><img src='${q.image}' alt='題目圖片' style='max-width:100%;max-height:120px;'></div>`;
             }
             wrongHtml += `<div><b>你的答案：</b><span style='color:#e67e22;'>${userAns || '未作答'}</span></div>`;
-            wrongHtml += `<div><b>正確答案：</b><span style='color:#2980b9;'>${correctAns}</span></div>`;
-            if (q.explanation) {
-                wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${q.explanation.replace(/\n/g, '<br>')}</span></div>`;
+            wrongHtml += `<div><b>正確答案：</b><span style='color:#2980b9;'>${correctAns}</span></div>`; if (q.explanation) {
+                // 首先處理字面值的 "\n" 替換為真正的換行符
+                let processedExplanation = q.explanation.replace(/\\n/g, '\n');
+
+                // 檢查解析中是否含有代碼區塊
+                if (processedExplanation.includes('<pre><code class="language-')) {
+                    // 處理含有代碼區塊的解析
+                    const parts = processedExplanation.split(/(<pre><code.*?>[\s\S]*?<\/code><\/pre>)/g);
+
+                    // 處理每個部分
+                    const processedParts = parts.map(part => {
+                        if (part.startsWith('<pre><code')) {
+                            // 代碼區塊部分保持不變
+                            return part;
+                        } else {
+                            // 非代碼區塊部分，將換行符轉為 <br>
+                            return part.replace(/\n/g, '<br>');
+                        }
+                    });
+
+                    wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${processedParts.join('')}</span></div>`;
+                } else {
+                    // 沒有代碼區塊，直接將換行符轉為 <br>
+                    wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${processedExplanation.replace(/\n/g, '<br>')}</span></div>`;
+                }
             }
             wrongHtml += `</div>`;
         });
@@ -915,10 +1031,14 @@ function showResult() {
     }
     // 插入到 resultSection 最下方
     let oldReview = document.getElementById('wrong-review');
-    if (oldReview) oldReview.remove();
-    const reviewDiv = document.createElement('div');
+    if (oldReview) oldReview.remove(); const reviewDiv = document.createElement('div');
     reviewDiv.id = 'wrong-review';
     reviewDiv.innerHTML = wrongHtml;
+
+    // 觸發 Prism.js 語法高亮
+    if (typeof Prism !== 'undefined') {
+        setTimeout(() => Prism.highlightAll(), 0);
+    }
     resultSection.appendChild(reviewDiv);
 }
 

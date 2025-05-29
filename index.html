@@ -4,32 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITS 人工智慧核心能力模擬試題復習系統</title>
+    <title>ITS Python 程式語言核心能力模擬試題復習系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="css/prism.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/linehight.css">
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 </head>
 
 <body>
     <div class="container">
-        <div class="header-title">ITS 人工智慧核心能力<br />Information Technology Specialist: Artificial Intelligence
+        <div class="header-title">ITS Python<br />Information Technology Specialist: Python
         </div>
         <div id="setup-section">
             <label class="form-title mb-1">發照單位：</label>
             <span class="text-primary ms-2">
                 <a style="text-decoration: none;"
-                    href="https://www.gotop.com.tw/Certification/CertificationItem.aspx?type=ITS&id=25&SubID=251"
+                    href="https://www.gotop.com.tw/certification/CertificationItem.aspx?type=ITS&id=25&SubID=222"
                     target="_blank">Certiport ITS (碁峰資訊)
                 </a>
             </span><br>
             <label class="form-title mb-1">證照名稱：</label>
-            <span class="ms-2">ITS 人工智慧核心能力</span><br>
+            <span class="ms-2 text-danger fw-bold">ITS Python 程式語言核心能力</span><br>
             <label class="form-title" for="question-range-start">題號範圍：</label>
-            <input type="number" id="question-range-start" min="1" value="1" style="width:60px;"> 至
-            <input type="number" id="question-range-end" min="1" value="1" style="width:60px;">
+            <input type="number" id="question-range-start" min="1" value="1" style="width:80px;"> 至
+            <input type="number" id="question-range-end" min="1" value="1" style="width:80px;">
             <br><label class="form-title" for="question-count">考題數量：</label>
-            <select id="question-count" class="form-select" style="width:40px; display:inline-block; margin-left:8px;">
+            <select id="question-count" class="form-select" style="width:80px; display:inline-block; margin-left:8px;">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -45,12 +47,14 @@
                 <option value="all">全部</option>
             </select>
             <br>
-            <label class="form-title" for="answer-order">答案順序：</label>
-            <label><input type="radio" name="answer-order" value="original" class="ms-2 form-check-input"> 題庫順序</label>
-            <label style="margin-left:12px;"><input type="radio" name="answer-order" value="shuffle" checked>
+            <!-- <label class="form-title" for="answer-order" hidden>答案順序：</label>
+            <label hidden><input type="radio" name="answer-order" value="original" class="ms-2 form-check-input" checked
+                    hidden>
+                題庫順序</label>
+            <label style="margin-left:12px;" hidden><input type="radio" name="answer-order" value="shuffle" hidden>
                 隨機順序
             </label>
-            <br>
+            <br> -->
             <label class="form-title" for="exam-duration">測驗時間：</label>
             <input type="number" id="exam-duration" min="1" max="999" value="60"
                 style="width:80px; margin-left:8px; margin-bottom:8px;">
@@ -129,6 +133,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/prism.js"></script>
     <script src="js/app.js"></script>
 </body>
 
