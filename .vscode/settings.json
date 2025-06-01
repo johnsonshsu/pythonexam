@@ -6,6 +6,7 @@
     "python.defaultInterpreterPath": "C:\\anaconda3\\python.exe", // 使用您的 Anaconda Python 路徑
     "python.terminal.activateEnvInCurrentTerminal": true,
     "jupyter.interactiveWindow.textEditor.executeSelection": true,
+    "liveServer.settings.port": 5501,
     // 建議的 linter 和 formatter (可選，需要安裝對應工具)
     // "python.linting.pylintEnabled": true,
     // "python.linting.flake8Enabled": true,

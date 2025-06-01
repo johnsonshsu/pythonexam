@@ -377,7 +377,7 @@ function showQuestion() {
 
             // 選項序號標籤
             const numberSpan = document.createElement('span');
-            numberSpan.textContent = `第 ${i + 1} 項答案：`;
+            numberSpan.textContent = `選項 ${i + 1} 答案：`;
             numberSpan.style.marginRight = '10px';
             numberSpan.style.fontWeight = 'bold';
 
@@ -676,9 +676,7 @@ function submitAnswer(e) {
     if (!q) return;
 
     // 取得本題的 optionList（顯示順序）
-    const optionList = optionListPerQuestion[current] || q.options.map((opt, idx) => ({ opt, idx }));
-
-    // 根據題目類型處理不同的答題界面
+    const optionList = optionListPerQuestion[current] || q.options.map((opt, idx) => ({ opt, idx }));    // 根據題目類型處理不同的答題界面
     let selected = [];
     let userAns = [];
 
@@ -713,14 +711,21 @@ function submitAnswer(e) {
 
     // 正確答案（原始 idx 陣列，1-based 轉 0-based）
     const correctIdxArr = q.answer.map(a => a - 1);
-    const userIdxArr = selected.slice();
-
-    // 判斷正確
+    const userIdxArr = selected.slice();    // 判斷正確
     let isCorrect;
     if (q.type === 'multioption') {
         // multioption 需要每個位置都對應正確
         isCorrect = userIdxArr.length === correctIdxArr.length &&
             userIdxArr.every((v, i) => v === correctIdxArr[i]);
+    } else if (q.type === 'multiple') {
+        // multiple 類型，直接使用 answer 陣列作為正確答案的索引
+        // 轉為 0-based 索引 (原答案是 1-based)
+        const correctIndices = q.answer.map(a => a - 1);
+        // 將用戶選擇的選項進行排序比較
+        const sortedUserArr = userIdxArr.slice().sort((a, b) => a - b);
+        const sortedCorrectArr = correctIndices.sort((a, b) => a - b);
+        isCorrect = sortedUserArr.length === sortedCorrectArr.length &&
+            sortedUserArr.every((v, i) => v === sortedCorrectArr[i]);
     } else {
         // 一般題目判斷選項是否正確
         const sortedUserArr = userIdxArr.slice().sort((a, b) => a - b);
@@ -826,7 +831,16 @@ function submitAnswer(e) {
             let userText = userIdxArr.map(idx => {
                 const optObj = optionList.find(o => o.idx === idx);
                 return optObj ? optObj.opt : (q.options[idx] || '');
-            }).join('、');
+            }).join('、');            // 特別處理 multiple 類型題目，直接顯示選項內容而不是索引
+            if (q.type === 'multiple') {
+                // 獲取正確答案：直接使用 answer 陣列中的索引（轉為 0-based）
+                const correctIndices = q.answer.map(a => a - 1);
+                ansText = correctIndices.map(i => q.options[i]).join('、');
+
+                // 獲取用戶選擇的答案
+                userText = selected.map(idx => q.options[idx]).join('、');
+            }
+
             feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><span style='color:#2980b9;'>${ansText}</span></div>`;
             feedbackHtml += `<div><b>你的答案：</b>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
         }
