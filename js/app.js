@@ -870,14 +870,23 @@ function submitAnswer(e) {
             if (q.type === 'multiple') {
                 // 獲取正確答案：直接使用 answer 陣列中的索引（轉為 0-based）
                 const correctIndices = q.answer.map(a => a - 1);
-                ansText = correctIndices.map(i => q.options[i]).join('、');
+                // 使用編號和換行來顯示正確答案
+                ansText = correctIndices.map((i, index) => {
+                    // 在optionList中找到顯示順序的選項索引
+                    const displayIndex = optionList.findIndex(o => o.idx === i);
+                    return `${displayIndex + 1}. ${q.options[i]}`;
+                }).join('<br>');
 
-                // 獲取用戶選擇的答案
-                userText = selected.map(idx => q.options[idx]).join('、');
+                // 獲取用戶選擇的答案，同樣使用編號和換行
+                userText = selected.map((idx, index) => {
+                    // 在optionList中找到顯示順序的選項索引
+                    const displayIndex = optionList.findIndex(o => o.idx === idx);
+                    return `${displayIndex + 1}. ${q.options[idx]}`;
+                }).join('<br>');
             }
 
-            feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><span style='color:#2980b9;'>${ansText}</span></div>`;
-            feedbackHtml += `<div><b>你的答案：</b>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
+            feedbackHtml += `<div style='margin-top:8px;'><b>正確答案：</b><br><span style='color:#2980b9;'>${ansText}</span></div>`;
+            feedbackHtml += `<div style='margin-top:4px;'><b>你的答案：</b><br>${userText || '<span style=\'color:#888\'>未作答</span>'}</div>`;
         }
     }    // 顯示詳細解析
     if (q.explanation) {
@@ -1013,10 +1022,28 @@ function showResult() {
     let wrongHtml = '';
     if (wrongQuestions.length > 0) {
         wrongHtml += `<div style='margin:32px 0 0 0;'><h5 style='color:#e74c3c;font-weight:bold;'>錯題複習</h5>`;
-        wrongQuestions.forEach((q, idx) => {
-            // 顯示題目、你的答案、正確答案、解析
-            let userAns = (q.userAns || []).map(a => q.options[a - 1]).join('、');
-            let correctAns = (q.answer || []).map(a => q.options[a - 1]).join('、'); wrongHtml += `<div style='border:1px solid #ffe0e0;background:#fff8f8;border-radius:8px;padding:14px 16px;margin-bottom:18px;'>`;            // 處理題目內容，先處理字面值 \n
+        wrongQuestions.forEach((q, idx) => {            // 顯示題目、你的答案、正確答案、解析
+            let userAns = '';
+            let correctAns = '';
+
+            // 特別處理 multiple 類型題目，顯示編號和換行
+            if (q.type === 'multiple') {
+                // 使用者答案
+                userAns = (q.userAns || []).map((a, index) => {
+                    return `${index + 1}. ${q.options[a - 1]}`;
+                }).join('<br>');
+
+                // 正確答案
+                correctAns = (q.answer || []).map((a, index) => {
+                    return `${index + 1}. ${q.options[a - 1]}`;
+                }).join('<br>');
+            } else {
+                // 其他類型題目，使用原有的、號分隔
+                userAns = (q.userAns || []).map(a => q.options[a - 1]).join('、');
+                correctAns = (q.answer || []).map(a => q.options[a - 1]).join('、');
+            }
+
+            wrongHtml += `<div style='border:1px solid #ffe0e0;background:#fff8f8;border-radius:8px;padding:14px 16px;margin-bottom:18px;'>`;// 處理題目內容，先處理字面值 \n
             let processedQuestion = q.question.replace(/\\n/g, '\n');
 
             // 檢查是否含有代碼區塊
@@ -1046,8 +1073,14 @@ function showResult() {
             if (q.image) {
                 wrongHtml += `<div style='margin:8px 0;'><img src='${q.image}' alt='題目圖片' style='max-width:100%;max-height:120px;'></div>`;
             }
-            wrongHtml += `<div><b>你的答案：</b><span style='color:#e67e22;'>${userAns || '未作答'}</span></div>`;
-            wrongHtml += `<div><b>正確答案：</b><span style='color:#2980b9;'>${correctAns}</span></div>`; if (q.explanation) {
+            // 如果是 multiple 類型，使用 div 包裹以便有更好的間距
+            if (q.type === 'multiple') {
+                wrongHtml += `<div><b>你的答案：</b><div style='color:#e67e22;margin-top:4px;margin-left:10px;'>${userAns || '<span style="color:#888;">未作答</span>'}</div></div>`;
+                wrongHtml += `<div style='margin-top:8px;'><b>正確答案：</b><div style='color:#2980b9;margin-top:4px;margin-left:10px;'>${correctAns}</div></div>`;
+            } else {
+                wrongHtml += `<div><b>你的答案：</b><span style='color:#e67e22;'>${userAns || '未作答'}</span></div>`;
+                wrongHtml += `<div><b>正確答案：</b><span style='color:#2980b9;'>${correctAns}</span></div>`;
+            } if (q.explanation) {
                 // 首先處理字面值的 "\n" 替換為真正的換行符
                 let processedExplanation = q.explanation.replace(/\\n/g, '\n');
 
