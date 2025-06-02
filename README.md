@@ -33,7 +33,7 @@ images/
 | 欄位         | 型別      | 說明                                                         |
 |--------------|-----------|--------------------------------------------------------------|
 | id           | number    | 題目編號（唯一值）                                           |
-| type         | string    | 題型：'single'（單選）或 'multi'（複選）                     |
+| type         | string    | 題型：'single'（單選）或 'multiple'（複選）  'multioption' (答案為多選)                   |
 | question     | string    | 題目內容                                                     |
 | options      | string[]  | 選項陣列                                                     |
 | answer       | number[]  | 正確答案（1-based，例：[2] 代表第2個選項，複選可多個）        |

@@ -20,7 +20,7 @@
     {
         "id": 2,
         "type": "multioption",
-        "question": "【CH01-2】你正在編寫一個Python程式用來記錄客戶資料並將其儲存在資料庫中。\n這個程式處理各種各樣的資料。\n以下的變數宣告後它們的資料類別是？\n<pre><code class=\"language-python line-numbers\">age = 12 = _(選項 1)_\nminor = False = _(選項 2)_\nname = \"David\" = _(選項 3)_\nweight = 64.5 = _(選項 4)_\nzip = \"545\" = _(選項 5)_</code></pre>",
+        "question": "【CH01-2】你正在編寫一個 Python 程式用來記錄客戶資料並將其儲存在資料庫中。\n這個程式處理各種各樣的資料。\n以下的變數宣告後它們的資料類別是？\n<pre><code class=\"language-python\">選項 1. age = 12\n選項 2. minor = False\n選項 3. name = 'David'\n選項 4. weight = 64.5\n選項 5. zip = '545'</code></pre>",
         "options": [
             "int|bool|str|float",
             "int|bool|str|float",
@@ -68,7 +68,7 @@
             1,
             2
         ],
-        "weight": 5,
+        "weight": 1,
         "image": null,
         "explanation": "● 在程式碼片段1中，`x1`是字串類型，`y1`是整數類型，\n在 Python 中，當你使用乘法運算子 * 在一個字串和一個整數之間時，\n它執行的不是數學上的乘法，而是「字串重複」。\n因此為會將字串`5`重複 4 次 = `5555`，因此變數 a 的資料類型仍然是字串（str）。\n● 在程式碼片段2中，`x2`和`y2`都是整數類型，除法運算會產生浮點數，因此變數 b 的資料類型是浮點數（float）。\n● 在程式碼片段3中，`x3`是浮點數，除以整數`y3`後結果仍然是浮點數，因此變數 c 的資料類型也是浮點數，而不是整數（int）。"
     },
@@ -85,7 +85,7 @@
         "answer": [
             2
         ],
-        "weight": 3,
+        "weight": 1,
         "image": null,
         "explanation": "● `+1E10` 是科學記數法表示的浮點數，`type(+1E10)` 返回 `float`。\n● `5.0` 是浮點數，`type(5.0)` 返回 `float`。\n● `\"True\"` 是字串，`type(\"True\")` 返回 `str`。\n● `False` 是布林值，`type(False)` 返回 `bool`。\n\n因此正確答案是 float, float, str, bool。"
     },
@@ -102,7 +102,7 @@
         "answer": [
             2
         ],
-        "weight": 3,
+        "weight": 1,
         "image": null,
         "explanation": "● 使用 `int()` 將輸入的數值轉換為整數，這是正確的做法，因此正確答案是 int(input(\"How many items would you like?\"))。"
     },
@@ -206,7 +206,7 @@
             3,
             4
         ],
-        "weight": 3,
+        "weight": 1,
         "image": null,
         "explanation": "● `0 or 5` 的結果是 `5`，因為 `or` 運算符會返回第一個真值，因此這個表達式的值是 `5`，而不是 `True`。\n● bool(0) 的結果是 `False`，因為 `bool(0)` 返回 `False`。\n● `None is None` 的結果是 `True`，因為 `None is None` 確實是 `True`。\n● `-5 < 0 < 5` 的結果是 `True`，因為這是一個連鎖比較，表示 `-5` 小於 `0` 且 `0` 小於 `5`。"
     },
@@ -319,7 +319,7 @@
     {
         "id": 19,
         "type": "multioption",
-        "question": "【CH02-12】你設計了一個比較數字的 Python 程式，内容如下：\n<pre><code class=\"language-python line-numbers line-hight18\">n1 = eval(input(\"Please enter the first number: \"))\nn2 = eval(input(\"Please enter the second number: \"))\nif n1 = n2:\n    print(\"The two numbers are equal.\")\nif n1 <= n2:\n    print(\"Number 1 is less than number 2.\")\nif n1 > n2:\n    print(\"Number 1 is greater than number 2.\")\nif n2 <> n1\nprint(\"The two numbers are the same.\")</code></pre>\n針對下列每個敘述，如果正確就選擇Yes，否則請選擇 No。\n在 3 行的語法是不正確的比較。_(選項 1)_\n在 6 行的語法只有 n1 小於 n2 會的出来。_(選項 2)_\n在 8 行的語法只有 n1 大於 n2 時才會列印出來。_(選項 3)_\n在 9 行的語法是不正確的比較。_(選項 4)_",
+        "question": "【CH02-12】你設計了一個比較數字的 Python 程式，内容如下：\n<pre><code class=\"language-python line-numbers line-hight18\">n1 = eval(input(\"Please enter the first number: \"))\nn2 = eval(input(\"Please enter the second number: \"))\nif n1 = n2:\n    print(\"The two numbers are equal.\")\nif n1 <= n2:\n    print(\"Number 1 is less than number 2.\")\nif n1 > n2:\n    print(\"Number 1 is greater than number 2.\")\nif n2 <> n1\nprint(\"The two numbers are the same.\")</code></pre>\n針對下列每個敘述，如果正確就選擇Yes，否則請選擇 No。<pre><code class=\"language-python\">選項答案選擇區\n\n選項 1. 第 3 行的語法是不正確的比較。\n選項 2. 第 6 行的語法只有 n1 小於 n2 時才會列印出來。\n選項 3. 第 8 行的語法只有 n1 大於 n2 時才會列印出來。\n選項 4. 第 9 行的語法是不正確的比較。</code></pre>",
         "options": [
             "Yes|No",
             "Yes|No",
@@ -334,7 +334,7 @@
         ],
         "weight": 1,
         "image": null,
-        "explanation": "● 在 3 行的語法是不正確的比較。\n● 在 6 行的語法只有 n1 小於 n2 會的出来。\n● 在 8 行的語法只有 n1 大於 n2 時才會列印出來。\n● 在 9 行的語法是不正確的比較。"
+        "explanation": "● 第 3 行的語法是不正確的比較，應該是用 `==` 取代 `=`。\n● 第 6 行的語法只有 n1 小於等於 n2 時才會列印出來。\n● 第 8 行的語法只有 n1 大於 n2 時才會列印出來。\n● 在 9 行的語法是不正確的比較，應該是用 `==` 取代 `<>`。"
     },
     {
         "id": 20,
@@ -412,7 +412,7 @@
     {
         "id": 24,
         "type": "multioption",
-        "question": "【CH03-3】你為公司開發了一個 Python 應用程式，設計了以下的程式碼：\n<pre><code class=\"language-python line-numbers line-hight18\">aList = [\"a\", \"b\", \"c\", \"d\", \"e\"]\nbList = [1,2,3,4,5]\nprint(aList is bList)\nprint(aList == bList)\naList = bList\nprint(aList is bList)\nprint(aList == bList)</code></pre>根據程式碼片段中提供的資訊選擇每個問題的答案選項。\n<pre><code class=\"language-python\">1.在第一次 print 後會顯示什麼？_(選項 1)_\n2.在第二次 print 後會顯示什麼？_(選項 2)_\n3.在第三次 print 後會顯示什示什麼？_(選項 3)_\n4.在第四次 print 後會顯示什麼？_(選項 4)_</code></pre>",
+        "question": "【CH03-3】你為公司開發了一個 Python 應用程式，設計了以下的程式碼：\n<pre><code class=\"language-python line-numbers line-hight18\">aList = [\"a\", \"b\", \"c\", \"d\", \"e\"]\nbList = [1,2,3,4,5]\nprint(aList is bList)\nprint(aList == bList)\naList = bList\nprint(aList is bList)\nprint(aList == bList)</code></pre>根據程式碼片段中提供的資訊選擇每個問題的答案選項。\n<pre><code class=\"language-python\">選項 1. 第一次 print (第 3 行)後會顯示什麼？\n選項 2. 第二次 print (第 4 行)後會顯示什麼？\n選項 3. 第三次 print (第 6 行)後會顯示什麼？\n選項 4. 第四次 print (第 7 行)後會顯示什麼？</code></pre>",
         "options": [
             "True|False",
             "True|False",
@@ -503,7 +503,7 @@
         ],
         "weight": 1,
         "image": null,
-        "explanation": "● 在這個情況下，`month[1::2]` 會返回從第二個月份開始，每隔一個值的月份名稱，即 `['February', 'April', 'June', 'August', 'October', 'December']`。"
+        "explanation": "● Python 陣列元素值由 0 開始算， 0 = 第 1 個元素 , 1 = 第 2 個元素，以此類推。\n ● month[2:2] 這會建立一個從索引 2 開始到索引 2 (不包含) 的切片，結果會是一個空清單。\n ● month[::2] 這會從清單的開頭 (索引 0) 開始，每間隔一個值取一個元素。這會包含第一個月份，但題目要求從第二個月份開始。\n ● month[1::2] 從索引 1 (第二個元素) 開始一直取到清單的末尾，每次取一個元素後，跳過接下來的一個元素 (步長為 2)。\n ● month[1:2]: 這會建立一個從索引 1 開始到索引 2 (不包含) 的切片，結果只會包含第二個月份的名稱。"
     },
     {
         "id": 29,
@@ -1287,7 +1287,7 @@
             1,
             2
         ],
-        "weight": 1,
+        "weight": 5,
         "image": null,
         "explanation": "● 函式 `petstore` 沒有寫 `return` 因此並不會傳回任何值，選項 1 是錯誤的。\n● 第 14 行和第 17 行的函式呼叫是有效的，因為它們符合函式的參數要求。\n● 第 16 行和第 18 行的函式呼叫會產生錯誤，因為它們使用了不正確的參數名稱或順序。\n● 第14和17行的函式呼叫，應該是有效呼叫，ITS答案 Yes；ChatGPT：No  #有效呼叫"
     },
