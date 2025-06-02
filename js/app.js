@@ -25,6 +25,41 @@ const scoreDiv = document.getElementById('score');
 
 let optionListPerQuestion = {}; // 新增：記錄每題選項順序
 
+// 新增：處理反引號(`)包圍的文本，轉換為 <code> 標籤
+function formatBacktickText(text) {
+    if (!text) return '';
+
+    // 不處理已有 <pre><code> 的內容，先將其替換為臨時標記
+    let tempMarkers = [];
+    let tempText = text;
+
+    // 先找出並暫存所有的 <pre><code> 區塊
+    const preCodeRegex = /(<pre><code.*?>[\s\S]*?<\/code><\/pre>)/g;
+    let match;
+    let index = 0;
+
+    while ((match = preCodeRegex.exec(text)) !== null) {
+        const marker = `__CODE_BLOCK_${index}__`;
+        tempMarkers.push({ marker, content: match[0] });
+        index++;
+    }
+
+    // 將 <pre><code> 區塊替換為臨時標記
+    tempMarkers.forEach(item => {
+        tempText = tempText.replace(item.content, item.marker);
+    });
+
+    // 處理反引號文本
+    tempText = tempText.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // 恢復臨時標記為原來的 <pre><code> 區塊
+    tempMarkers.forEach(item => {
+        tempText = tempText.replace(item.marker, item.content);
+    });
+
+    return tempText;
+}
+
 function playSound(type) {
     const soundCheckbox = document.getElementById('enable-sound');
     const enableSoundNow = soundCheckbox && soundCheckbox.checked;
@@ -816,7 +851,7 @@ function submitAnswer(e) {
             }
             answerTable.appendChild(tbody);
 
-            feedbackHtml += '<div style="margin-top:10px;"><b>答案比對：</b></div>';
+            feedbackHtml += '<div style="margin-top:10px;"><span class="answer-title">答案比對：</span></div>';
             feedbackHtml += answerTable.outerHTML;
         }
     } else {
@@ -860,15 +895,16 @@ function submitAnswer(e) {
                     // 代碼區塊部分保持不變
                     return part;
                 } else {
-                    // 非代碼區塊部分，將換行符轉為 <br>
-                    return part.replace(/\n/g, '<br>');
+                    // 非代碼區塊部分，先處理反引號，再將換行符轉為 <br>
+                    return formatBacktickText(part).replace(/\n/g, '<br>');
                 }
             });
 
-            feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${processedParts.join('')}</div>`;
+            feedbackHtml += `<div style='margin-top:12px;'><span class='answer-title'>答案解析：</span><br>${processedParts.join('')}</div>`;
         } else {
-            // 沒有代碼區塊，直接將換行符轉為 <br>
-            feedbackHtml += `<div style='margin-top:12px;'><b>解析：</b><br>${processedExplanation.replace(/\n/g, '<br>')}</div>`;
+            // 沒有代碼區塊，先處理反引號，再將換行符轉為 <br>
+            const formattedExplanation = formatBacktickText(processedExplanation);
+            feedbackHtml += `<div style='margin-top:12px;'><span class='answer-title'>答案解析：</span><br>${formattedExplanation.replace(/\n/g, '<br>')}</div>`;
         }
     }
 
@@ -900,7 +936,7 @@ function submitAnswer(e) {
     // 建立下一題按鈕
     const nextButton = document.createElement('button');
     nextButton.id = 'next-btn';
-    nextButton.className = 'btn btn-warning';
+    nextButton.className = 'btn btn-secondary';
     nextButton.innerHTML = '<i class="fa-solid fa-arrow-right"></i> 下一題';
     nextButton.addEventListener('click', nextQuestion);
     optionsForm.appendChild(nextButton);
@@ -1026,15 +1062,16 @@ function showResult() {
                             // 代碼區塊部分保持不變
                             return part;
                         } else {
-                            // 非代碼區塊部分，將換行符轉為 <br>
-                            return part.replace(/\n/g, '<br>');
+                            // 非代碼區塊部分，先處理反引號，再將換行符轉為 <br>
+                            return formatBacktickText(part).replace(/\n/g, '<br>');
                         }
                     });
 
                     wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${processedParts.join('')}</span></div>`;
                 } else {
-                    // 沒有代碼區塊，直接將換行符轉為 <br>
-                    wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${processedExplanation.replace(/\n/g, '<br>')}</span></div>`;
+                    // 沒有代碼區塊，先處理反引號，再將換行符轉為 <br>
+                    const formattedExplanation = formatBacktickText(processedExplanation);
+                    wrongHtml += `<div style='margin-top:6px;'><b>解析：</b><span style='color:#555;'>${formattedExplanation.replace(/\n/g, '<br>')}</span></div>`;
                 }
             }
             wrongHtml += `</div>`;
