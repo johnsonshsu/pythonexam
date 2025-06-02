@@ -8,7 +8,7 @@ body {
 /* 添加反引號包圍文字的特殊樣式 */
 #feedback code:not(pre code),
 #wrong-review code:not(pre code) {
-    background: #4a4a4a;
+    background: #868585;
     color: #ffffff;
     padding: 2px 5px;
     border-radius: 3px;

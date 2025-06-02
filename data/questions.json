@@ -301,7 +301,7 @@
     {
         "id": 18,
         "type": "multioption",
-        "question": "【CH02-11】你設計了一個數學運算的 Python 程式，程式碼如下：\n<pre><code class=\"language-python line-numbers line-hight19\">a = 11\nb=5\n</code></pre>\nprint(a / b)的輸出結果是？_(選項 1)_\nprint(a // b)的輸出結果是？_(選項 2)_\nprint(a % b)的輸出結果是？_(選項 3)_",
+        "question": "【CH02-11】你設計了一個數學運算的 Python 程式，程式碼如下：\n<pre><code class=\"language-python line-numbers line-hight19\">a = 11\nb = 5\n</code></pre><pre><code class=\"language-python\">選項答案選擇區\nprint(a / b)的輸出結果是？_(選項 1)_\nprint(a // b)的輸出結果是？_(選項 2)_\nprint(a % b)的輸出結果是？_(選項 3)_</code></pre>",
         "options": [
             "1|2|2.2",
             "1|2|2.2",
@@ -314,7 +314,7 @@
         ],
         "weight": 1,
         "image": null,
-        "explanation": "● `print(a / b)` 的輸出結果是 `2.2`，因為這是浮點數除法。\n● `print(a // b)` 的輸出結果是 `2`，因為這是整除運算，返回商的整數部分。\n● `print(a % b)` 的輸出結果是 `1`，因為這是取餘運算，返回除法的餘數。"
+        "explanation": "● `print(a / b)` 的輸出結果是 `2.2`，因為這是浮點數除法，返回除法運算的 `值`。\n● `print(a // b)` 的輸出結果是 `2`，因為這是整除運算，返回除法運算的 `商數` 。\n● `print(a % b)` 的輸出結果是 `1`，因為這是整除運算，返回除法運算的 `餘數`。"
     },
     {
         "id": 19,
